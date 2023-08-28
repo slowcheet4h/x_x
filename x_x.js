@@ -30,6 +30,74 @@ x_x.unwrap = function (xelement) {
     return xelement;
 };
 
+
+x_x.make_draggable = function(element) {
+    element.x_xDragging = false;
+    element.removeEventListener("mouseup", x_x.drag_mouse_up);
+    element.addEventListener("mousedown", x_x.drag_mouse_down);
+};
+
+let dragging = false;
+let pinchX;
+let pinchY;
+let drag_point = undefined;
+
+
+let click_move = function (event) {
+
+  let newX = event.clientX - pinchX;
+  let newY = event.clientY - pinchY;
+  let target = document.getElementById(drag_point.dataset.tomove);
+  
+  target.style.left = newX + "px";
+  target.style.top = newY + "px";
+};
+
+x_x.make_draggable = function (window_to_move, touch_point) {
+
+  drag_point = document.getElementById(touch_point);
+  drag_point.dataset.tomove = window_to_move;
+  window_to_move = document.getElementById(window_to_move);
+  const temp_drag_point = drag_point;
+  const temp_window_to_move = window_to_move;
+  
+  
+
+  window_to_move.style.position = "absolute";
+  drag_point.style.userSelect = "none";
+  drag_point.style.cursor = "move";
+  
+  
+  temp_drag_point.onmousedown = function (event) {
+    event.stopImmediatePropagation();
+    pinchX =
+      event.clientX - temp_window_to_move.getBoundingClientRect().left;
+    pinchY =
+      event.clientY - temp_window_to_move.getBoundingClientRect().top;
+    
+    drag_point = temp_drag_point;
+    
+    drag_start(temp_window_to_move);
+  };
+};
+
+x_x.drag_start = function (window_to_move) {
+  dragging = true;
+  
+  document.addEventListener("mousemove", click_move, false);
+  document.addEventListener("mouseup", drag_stop, false);
+};
+
+x_x.drag_stop = function (event) {
+  dragging = false;
+  drag_point.style.userSelect = "";
+  drag_point = undefined;
+  document.removeEventListener("mousemove", click_move);
+  document.removeEventListener("mouseup", drag_stop);
+};
+
+
+
 x_x.null_default = function (original, def) {
     if (Array.isArray(original)) {
         if (original.length != 0) {
